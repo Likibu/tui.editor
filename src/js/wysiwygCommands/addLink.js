@@ -33,6 +33,11 @@ const AddLink = CommandManager.command('wysiwyg', /** @lends AddLink */{
     wwe.focus();
 
     if (!sq.hasFormat('PRE')) {
+      // On clear le lien s'il y en a déjà un de présent
+      if (sq.hasFormat('a') || sq.hasFormat('a')) {
+        sq.changeFormat(null, {tag: 'A'}, sq.getSelection(), true);
+      }
+
       sq.removeAllFormatting();
 
       if (sq.getSelectedText()) {

@@ -52,6 +52,7 @@ import wwStrike from './wysiwygCommands/strike';
 import wwBlockquote from './wysiwygCommands/blockquote';
 import wwAddImage from './wysiwygCommands/addImage';
 import wwAddLink from './wysiwygCommands/addLink';
+import wwUnlink from './wysiwygCommands/unlink';
 import wwHR from './wysiwygCommands/hr';
 import wwHeading from './wysiwygCommands/heading';
 import wwParagraph from './wysiwygCommands/paragraph';
@@ -327,6 +328,7 @@ class ToastUIEditor {
     this.addCommand(wwOL);
     this.addCommand(wwAddImage);
     this.addCommand(wwAddLink);
+    this.addCommand(wwUnlink);
     this.addCommand(wwHR);
     this.addCommand(wwHeading);
     this.addCommand(wwParagraph);
