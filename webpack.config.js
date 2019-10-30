@@ -28,6 +28,7 @@ const ENTRY_IMAGE_DIR = './src/image';
 
 const isDevServer = process.argv[1].indexOf('webpack-dev-server') >= 0;
 const isProduction = process.argv.indexOf('-p') >= 0;
+const isFast = process.argv.indexOf('--env=fast') >= 0;
 const isHMR = process.argv.indexOf('--hot') >= 0 || process.argv.indexOf('--hotOnly') >= 0;
 
 const NAME_SPACE = ['tui', 'Editor'];
@@ -43,7 +44,7 @@ const BANNER = [
   `@license ${pkg.license}`
 ].join('\n');
 
-const defaultConfigs = Array(isDevServer ? 1 : 5).fill(0).map(() => {
+const defaultConfigs = Array(isDevServer ? 1 : 6).fill(0).map(() => {
   return {
     cache: false,
     output: {
@@ -282,6 +283,22 @@ if (isDevServer) {
       reportFilename: `${ANALYZER_DIR}/stats-${pkg.version}.html`
     }));
   }
+
+  // Build with Deps 2
+  defaultConfigs[5].entry = {
+    'Editor-full': ENTRY_MAIN_ALL
+  };
+  defaultConfigs[5].externals.length = 0;
+  defaultConfigs[5].output.library = NAME_SPACE;
+  defaultConfigs[5].output.libraryTarget = 'umd';
+  if (isProduction) {
+    defaultConfigs[5].plugins.push(new BundleAnalyzerPlugin({
+      analyzerMode: 'static',
+      reportFilename: `${ANALYZER_DIR}/stats-${pkg.version}.html`
+    }));
+  }
 }
 
-module.exports = defaultConfigs;
+let myConfigs = isFast ? [defaultConfigs[5]] : defaultConfigs;
+
+module.exports = myConfigs;

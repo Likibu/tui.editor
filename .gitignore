@@ -58,3 +58,4 @@ karma.conf.local.js
 .\#*
 .vscode/
 dist/
+/nbproject/
