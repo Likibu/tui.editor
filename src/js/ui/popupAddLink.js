@@ -22,7 +22,7 @@ class PopupAddLink extends LayerPopup {
             <label for="url">${i18n.get('URL')}</label>
             <input type="text" class="te-url-input" />
             <label for="linkText">${i18n.get('Link text')}</label>
-            <input type="text" class="te-link-text-input" />
+            <input type="text" class="te-link-text-input" readonly />
             <div class="te-button-section">
                 <button type="button" class="te-ok-button">${i18n.get('OK')}</button>
                 <button type="button" class="te-close-button">${i18n.get('Cancel')}</button>
@@ -78,6 +78,20 @@ class PopupAddLink extends LayerPopup {
     this.on('shown', () => {
       const inputText = this._inputText;
       const inputURL = this._inputURL;
+      const sq = this._editor.wwEditor.getEditor();
+
+      if (sq.hasFormat('a')) {
+        let sel = sq.getSelection();
+        let editedLink = sel.commonAncestorContainer;
+
+        while (editedLink.nodeName !== 'A') {
+          editedLink = editedLink.parentElement;
+        }
+
+        sel.selectNode(editedLink);
+        sq.setSelection(sel);
+        inputURL.value = $(editedLink).attr('href');
+      }
 
       const selectedText = this._editor.getSelectedText().trim();
 

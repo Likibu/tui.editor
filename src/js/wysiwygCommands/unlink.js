@@ -22,7 +22,7 @@ const Unlink = CommandManager.command('wysiwyg', /** @lends Bold */{
     const sq = wwe.getEditor();
     wwe.focus();
 
-    if (sq.hasFormat('a') || sq.hasFormat('a')) {
+    if (sq.hasFormat('a')) {
       sq.changeFormat(null, {tag: 'A'}, sq.getSelection(), true);
     }
   }
