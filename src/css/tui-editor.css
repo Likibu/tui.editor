@@ -932,6 +932,16 @@ only screen and (                min-resolution: 2dppx) {
     border: 1px solid #ebebeb;
 }
 
+.tui-toolbar-icons.tui-toolbar-icon-striked {
+    font-weight: bold;
+    font-size: 1.4em;
+    color: rgba(85,85,85,1);
+    font-style: italic;
+    position: absolute;
+    padding-top: 1px;
+    padding-left: 2px;
+}
+
 .CodeMirror .cm-header {
     font-weight: bold;
     color: inherit;

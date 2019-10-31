@@ -7,6 +7,7 @@ import ToolbarItem from './toolbarItem';
 import ToolbarButton from './toolbarButton';
 import ToolbarDivider from './toolbarDivider';
 import i18n from '../i18n';
+import $ from 'jquery';
 
 /**
  * Toolbar Item Factory
@@ -124,6 +125,15 @@ class ToolbarItemFactory {
         className: 'tui-link',
         event: 'openPopupAddLink',
         tooltip: i18n.get('Insert link')
+      });
+      break;
+    case 'unlink':
+      toolbarItem = new ToolbarButton({
+        name: 'unlink',
+        $el: $('<button type="button" class="tui-toolbar-icons tui-link tui-toolbar-icon-striked">/</div>'),
+        className: '',
+        command: 'Unlink',
+        tooltip: 'Remove link'
       });
       break;
     case 'code':
