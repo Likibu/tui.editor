@@ -121,7 +121,7 @@ class WwClipboardManager {
     const textNodes = domUtils.getAllTextNode(node);
 
     textNodes.forEach((textNode) => {
-      if (/\n/.test(textNode.nodeValue)) {
+      if (/\n/.test(textNode.nodeValue) && textNode.parentNode) {
         textNode.parentNode.innerHTML = textNode.nodeValue.replace(/\n/g, '<br>');
       }
     });
