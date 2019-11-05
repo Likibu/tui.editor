@@ -54,7 +54,7 @@ const defaultConfigs = Array(isDevServer ? 1 : 6).fill(0).map(() => {
       filename: DIST_JS_NAME
     },
     module: {
-      rules: [{
+      rules: [/*{
         test: /\.js$/,
         exclude: /node_modules|lib|dist/,
         loader: 'eslint-loader',
@@ -64,7 +64,7 @@ const defaultConfigs = Array(isDevServer ? 1 : 6).fill(0).map(() => {
           failOnWarning: false,
           failOnError: false
         }
-      },
+      },*/
       {
         test: /\.js$/,
         exclude: /node_modules|lib|dist/,

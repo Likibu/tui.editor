@@ -18,21 +18,38 @@ const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})(\/([^\s]*))?$/;
  */
 class PopupAddLink extends LayerPopup {
   constructor(options) {
-    const POPUP_CONTENT = `
-            <label for="url">${i18n.get('URL')}</label>
+    let settings = options.editor.options.likibu;
+    let popupContent = `
             <input type="text" class="te-url-input" />
+            <label for="type">Page Type</label>
+            <select id="type"><option value="">Select page type...</option><option value="content">Content Page</option><option value="tag">Tag Page</option><option value="landing_search">Destination</option></select>
+            <label for="lang">Language</label>
+            <select id="lang"><option value="">Select language...</option>
+    `;
+
+    for (var lang in settings) {
+      popupContent += '<option value="' + lang + '">' + settings[lang].name + '</option>';
+    };
+    
+    popupContent += `
+            </select>
+            <div id="section_content" style="display: none;"><label for="content_slug">Content page : </label><select id="content_slug"></select></div>
+            <div id="section_tag" style="display: none;"><label for="tag_slug">Tag page : </label><select id="tag_slug"></select></div>
+            <div id="section_destination" style="display: none;"><label for="destination_slug">Destination : </label><select id="destination_slug"></select>
+            <label for="flp_slug">FLP : </label><select id="flp_slug"></select></div>
             <label for="linkText">${i18n.get('Link text')}</label>
             <input type="text" class="te-link-text-input" readonly />
             <div class="te-button-section">
                 <button type="button" class="te-ok-button">${i18n.get('OK')}</button>
                 <button type="button" class="te-close-button">${i18n.get('Cancel')}</button>
             </div>
-        `;
+    `;
+
     options = util.extend({
       header: true,
       title: i18n.get('Insert link'),
       className: 'te-popup-add-link tui-editor-popup',
-      content: POPUP_CONTENT
+      content: popupContent
     }, options);
     super(options);
   }
@@ -90,7 +107,22 @@ class PopupAddLink extends LayerPopup {
 
         sel.selectNode(editedLink);
         sq.setSelection(sel);
-        inputURL.value = $(editedLink).attr('href');
+        let href = $(editedLink).attr('href').replace(/%7B/g, '{').replace(/%7D/g, '}');
+
+        if (href.match(/^{{/g)) {
+            let link = href.replace(/(^{{)(.*)(}}$)$/g, '$2');
+            let [linkType, lang, slug, destinationSettings] = link.split('#');
+            
+            if ('landing_search' === linkType) {
+                destinationSettings = JSON.parse(destinationSettings.replace(/'/g, '"'));
+                let [destSlug, flpSlug] = destinationSettings.where.split('/');
+            }
+            
+            $('#type').val(linkType).trigger('change');
+            $('#lang').val(lang).trigger('change');
+        }
+        
+        inputURL.value = href;
       }
 
       const selectedText = this._editor.getSelectedText().trim();
@@ -102,10 +134,76 @@ class PopupAddLink extends LayerPopup {
 
       inputURL.focus();
     });
+    
+    $('#type').change(() => {
+        if ($('#lang').val()) {
+            this.updatedType();
+        }
+    });
+    $('#lang').change(() => {
+        if ($('#type').val()) {
+            this.updatedType();
+        }
+    });
 
     this.on('hidden', () => {
       this._resetInputs();
     });
+  }
+
+  updatedType() {
+    let $type = $('#type');
+    let $lang = $('#lang');
+
+    switch ($type.val()) {
+      case 'content':
+        $('#section_content').show();
+        $('#section_tag, #section_destination').hide();
+        this.loadContentPages($lang.val());
+        break;
+      case 'tag':
+        $('#section_tag').show();
+        $('#section_content, #section_destination').hide();
+        this.loadTagPages($lang.val());
+        break;
+      case 'landing_search':
+        $('#section_destination').show();
+        $('#section_content, #section_tag').hide();
+        this.loadDestinations($lang.val());
+        break;
+      default: 
+        break;
+    }
+  }
+  
+  loadContentPages(lang) {
+    $.ajax({
+      dataType: "json",
+      url: '/_ui/get_pages',
+      data: {lang: lang},
+      success: function(data) {
+          
+      }
+    });
+  }
+  
+  loadTagPages(lang) {
+    $.ajax({
+      dataType: "json",
+      url: '/_ui/get_tags',
+      data: {lang: lang},
+      success: function(data) {
+          console.log(data);
+      }
+    });
+  }
+  
+  loadDestinations(lang) {
+      
+  }
+  
+  loadFlps(lang, destination) {
+      
   }
 
   /**
