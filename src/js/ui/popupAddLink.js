@@ -114,7 +114,7 @@ class PopupAddLink extends LayerPopup {
 
         sel.selectNode(editedLink);
         sq.setSelection(sel);
-        let href = $(editedLink).attr('href').replace(/%7B/g, '{').replace(/%7D/g, '}');
+        let href = $(editedLink).attr('href').replace(/%7B/g, '{').replace(/%7D/g, '}').replace(/%22/g, '"');
         
         inputURL.value = href;
         
