@@ -19,9 +19,8 @@ const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})(\/([^\s]*))?$/;
 class PopupAddLink extends LayerPopup {
   constructor(options) {
     let settings = options.editor.options.likibu; 
-    console.log(settings);
     let popupContent = `
-            <div style="display: block;"><input type="text" class="te-url-input" /></div>
+            <div style="display: none;"><input type="text" class="te-url-input" /></div>
             <label for="type">Page Type</label>
             <select id="type"><option value="">Select page type...</option><option value="content">Content Page</option><option value="tag">Tag Page</option><option value="landing_search">Destination</option><option value="custom">Custom URL</option></select>
             <label for="lang">Language</label>
@@ -101,6 +100,10 @@ class PopupAddLink extends LayerPopup {
       const inputURL = this._inputURL;
       const sq = this._editor.wwEditor.getEditor();
 
+      // On reset tout (sauf la langue)
+      $('#type, #content_slug, #tag_slug, #destination_search, #flp_slug').val(''); 
+      $('#section_content, #section_tag, #section_destination, #section_custom').hide();
+
       if (sq.hasFormat('a')) {
         let sel = sq.getSelection();
         let editedLink = sel.commonAncestorContainer;
@@ -120,9 +123,13 @@ class PopupAddLink extends LayerPopup {
         if (likibuLink) {
           $('#type').val(likibuLink.type);
           $('#lang').val(likibuLink.lang);
+          if ('' !== likibuLink.destination) {
+            $('#destination_search').val(likibuLink.destination);
+            this.destinationChanged(false, true, likibuLink.flp);
+          }
         } else {
           $('#type').val('custom');
-          $('#type').val('fr'); // fake
+          $('#lang').val('fr'); // fake
         }
         
         this.typeChanged(likibuLink.slug, likibuLink.destination, likibuLink.flp);
@@ -158,43 +165,45 @@ class PopupAddLink extends LayerPopup {
       this.setLikibuLink();
     });
     this.destination_search = '';
-    $('#destination_search').on('keyup', (e) => {
-      let value = $('#destination_search').val();
-      let found = false;
-      
-      $('#destination_list option').each((i, option) => {
-        if ($(option).val() == value) {
-          found = true;
-        }
-      });
-      
-      if (found) {
-        this.loadFlps($('#lang').val(), $('#destination_search').val());
-        this.setLikibuLink();
-        return e.preventDefault();
-      }
-      
-      this.destination_search = $('#destination_search').val();
-      $.ajax({
-        dataType: 'json',
-        url: '/destination/autocomplete',
-        data: {
-          lang: $('#lang').val(),
-          term: value
-        },
-        success: function(data) {
-          let options = '';
-          $(data).each(function() {
-            options += '<option value="' + this.slug + '">' + this.label + '</option>';
-          });
-          $('#destination_list').html(options);
-          $('#destination_search').focus();
-        }
-      });
-    });
+    $('#destination_search').on('keyup', (e) => { this.destinationChanged(e, false); });
 
     this.on('hidden', () => {
       this._resetInputs();
+    });
+  }
+  
+  destinationChanged(e, forceRefresh, flpSlug) {
+    let value = $('#destination_search').val();
+    let found = false;
+
+    $('#destination_list option').each((i, option) => {
+      if ($(option).val() == value) {
+        found = true;
+      }
+    });
+
+    if (found || forceRefresh) {
+      this.loadFlps($('#lang').val(), $('#destination_search').val(), flpSlug);
+      this.setLikibuLink();
+      return e ? e.preventDefault() : false;
+    }
+
+    this.destination_search = $('#destination_search').val();
+    $.ajax({
+      dataType: 'json',
+      url: '/destination/autocomplete',
+      data: {
+        lang: $('#lang').val(),
+        term: value
+      },
+      success: function(data) {
+        let options = '';
+        $(data).each(function() {
+          options += '<option value="' + this.slug + '">' + this.label + '</option>';
+        });
+        $('#destination_list').html(options);
+        $('#destination_search').focus();
+      }
     });
   }
   
@@ -268,23 +277,28 @@ class PopupAddLink extends LayerPopup {
       case 'content':
         $('#section_content, #section_lang').show();
         $('#section_tag, #section_destination, #section_custom').hide();
+        $('#tag_slug, #destination_search, #flp_slug').val('');
         this.loadContentPages($lang.val(), slug);
         break;
       case 'tag':
         $('#section_tag, #section_lang').show();
         $('#section_content, #section_destination, #section_custom').hide();
+        $('#content_slug, #destination_search, #flp_slug').val('');
         this.loadTagPages($lang.val(), slug);
         break;
       case 'landing_search':
         $('#section_destination, #section_lang').show();
         $('#section_content, #section_tag, #section_custom').hide();
+        $('#content_slug, #tag_slug').val('');
         break;
       case 'custom':
         $('#section_custom').show();
         $('#section_content, #section_tag, #section_destination, #section_lang').hide();
+        $('#content_slug, #tag_slug, #destination_search, #flp_slug').val('');
       default: 
         break;
     }
+    this.loadFlps(false, false, false);
   }
   
   loadContentPages(lang, slug) {
@@ -309,24 +323,33 @@ class PopupAddLink extends LayerPopup {
     $select.val(slug);
   }
   
-  loadFlps(lang, destination) {
-    $.ajax({
-      dataType: 'json',
-      url: '/destination/get_flps',
-      data: {
-        lang: lang,
-        slug: destination
-      },
-      success: function(data) {
-        let $select = $('#flp_slug');
-        $select.find('option:not([value=""])').remove();
-        let options = $select.html();
-        $(data).each(function() {
-          options += '<option value="' + this.slug + '">' + this.slug + '</option>';
-        });
-        $select.html(options);
-      }
-    });
+  loadFlps(lang, destination, selection) {
+    let $select = $('#flp_slug');
+    $select.find('option:not([value=""])').remove();
+
+    if (lang && destination) {
+      $.ajax({
+        dataType: 'json',
+        url: '/destination/get_flps',
+        data: {
+          lang: lang,
+          slug: destination
+        },
+        success: (data) => {
+          let options = $select.html();
+          $(data).each(function() {
+            options += '<option value="' + this.slug + '">' + this.slug + '</option>';
+          });
+          $select.html(options);
+        
+          if (selection) {
+            $select.val(selection);
+          }
+
+          this.setLikibuLink();
+        }
+      });
+    }
   }
 
   /**
