@@ -130,10 +130,19 @@ class ToolbarItemFactory {
     case 'unlink':
       toolbarItem = new ToolbarButton({
         name: 'unlink',
-        $el: $('<button type="button" class="tui-toolbar-icons tui-link tui-toolbar-icon-striked">/</div>'),
+        $el: $('<button type="button" class="tui-toolbar-icons tui-link tui-toolbar-icon-striked">/</button>'),
         className: '',
         command: 'Unlink',
         tooltip: 'Remove link'
+      });
+      break;
+    case 'destination_link':
+      toolbarItem = new ToolbarButton({
+        name: 'destination_link',
+        $el: $('<button type="button" class="fa fa-globe destination-link"/>'),
+        className: '',
+        event: 'openPopupAddDestinationLink',
+        tooltip: 'Create automatic destination link'
       });
       break;
     case 'code':

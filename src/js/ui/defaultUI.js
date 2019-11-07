@@ -9,6 +9,7 @@ import Tab from './tab';
 import LayerPopup from './layerpopup';
 import ModeSwitch from './modeSwitch';
 import PopupAddLink from './popupAddLink';
+import PopupAddDestinationLink from './popupAddDestinationLink';
 import PopupAddImage from './popupAddImage';
 import PopupTableUtils from './popupTableUtils';
 import PopupAddTable from './popupAddTable';
@@ -131,6 +132,7 @@ class DefaultUI {
     this._initModeSwitch(hideModeSwitch);
 
     this._initPopupAddLink();
+    this._initPopupAddDestinationLink();
     this._initPopupAddImage();
     this._initPopupAddTable();
     this._initPopupAddHeading();
@@ -201,6 +203,13 @@ class DefaultUI {
 
   _initPopupAddLink() {
     this._popups.push(new PopupAddLink({
+      $target: this.$el,
+      editor: this._editor
+    }));
+  }
+
+  _initPopupAddDestinationLink() {
+    this._popups.push(new PopupAddDestinationLink({
       $target: this.$el,
       editor: this._editor
     }));

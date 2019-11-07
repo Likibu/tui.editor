@@ -23,6 +23,7 @@ const eventList = [
   'changePreviewTabPreview',
   'changePreviewTabWrite',
   'openPopupAddLink',
+  'openPopupAddDestinationLink',
   'openPopupAddImage',
   'openPopupAddTable',
   'openPopupTableUtils',
