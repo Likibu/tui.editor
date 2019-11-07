@@ -130,6 +130,7 @@ class PopupAddLink extends LayerPopup {
         } else {
           $('#type').val('custom');
           $('#lang').val('fr'); // fake
+          $('#url_custom').val(href);
         }
         
         this.typeChanged(likibuLink.slug, likibuLink.destination, likibuLink.flp);
