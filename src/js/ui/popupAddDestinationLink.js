@@ -21,10 +21,6 @@ class PopupAddDestinationLink extends LayerPopup {
     let settings = options.editor.options.likibu; 
     let popupContent = `
             <div id="addDestinationLink">Loading...</div>
-            <div class="te-button-section">
-                <button type="button" class="te-ok-button">${i18n.get('OK')}</button>
-                <button type="button" class="te-close-button">${i18n.get('Cancel')}</button>
-            </div>
     `;
 
     options = util.extend({
@@ -71,21 +67,42 @@ class PopupAddDestinationLink extends LayerPopup {
   _initDOMEvent() {
     super._initDOMEvent();
 
-    this.on('click .te-close-button', () => this.hide());
-    this.on('click .te-ok-button', () => this._addLink());
-
     this.on('shown', () => {
       const sq = this._editor.wwEditor.getEditor();
       const lang = this.detectLang();
+      
+      $('#addDestinationLink').html('Loading...');
       
       $.ajax({
         dataType: 'json',
         url: '/destination/detectWithinText',
         data: {
-          term: sq.getSelectedText()
+          term: sq.getSelectedText(),
+          lang: lang
         },
-        success: function(data) {
-          console.log(data);
+        success: (data) => {
+          let html = '<label>Best suggestions : </label>';
+          html += '<ul>';
+          
+          $(data.destinations).each((i, el) => {
+              html += '<li><a href="#" data-slug="' + el.slug + '" data-lang="' + el.lang + '">' + el.name + ' (' + el.lang + ')</a></li>';
+          });
+          
+          html += '</ul>';
+          html += '<label>Other suggestions : </label>';
+          html += '<ul>';
+          
+          $(data.other).each((i, el) => {
+              html += '<li><a href="#" data-slug="' + el.slug + '" data-lang="' + el.lang + '">' + el.name + ' (' + el.lang + ')</a></li>';
+          });
+          
+          html += '</ul>';
+          $('#addDestinationLink').html(html);
+          $('#addDestinationLink a').click((e) => {
+            e.preventDefault();
+            const $link = $(e.target);
+            this._addLink($link.data('slug'), $link.data('lang'));
+          });
         }
       });
     });
@@ -119,23 +136,11 @@ class PopupAddDestinationLink extends LayerPopup {
     });
   }
 
-  _addLink() {
-    const {url, linkText} = {"a": "@todo", "b": "@todo"};
-
-    this._clearValidationStyle();
-
-    if (linkText.length < 1) {
-      $(this._inputText).addClass('wrong');
-
-      return;
-    }
-    if (url.length < 1) {
-      $(this._inputURL).addClass('wrong');
-
-      return;
-    }
-
-    this._eventManager.emit('command', 'AddDestinationLink', {
+  _addLink(slug, lang) {
+    const linkText = this._editor.getSelectedText().trim();
+    let url = '{{landing_search#' + lang + '#' + this.settings[lang].landing_slug + '#{\'where\':\'' + slug + '\'}#}}';
+    
+    this._eventManager.emit('command', 'AddLink', {
       linkText,
       url
     });
