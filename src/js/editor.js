@@ -92,6 +92,7 @@ import './langs/zh_TW';
 import './langs/gl_ES';
 import './langs/sv_SE';
 import './langs/it_IT';
+import './langs/nb_NO';
 
 const __nedInstance = [];
 const gaTrackingId = 'UA-129966929-1';
@@ -218,7 +219,9 @@ class ToastUIEditor {
       this.convertor,
       false,
       this.options.previewDelayTime);
-    this.wwEditor = WysiwygEditor.factory(this.layout.getWwEditorContainerEl(), this.eventManager);
+    this.wwEditor = WysiwygEditor.factory(this.layout.getWwEditorContainerEl(), this.eventManager, {
+      useDefaultHTMLSanitizer: this.options.useDefaultHTMLSanitizer
+    });
     this.toMarkOptions = {
       gfm: true,
       renderer: toMarkRenderer

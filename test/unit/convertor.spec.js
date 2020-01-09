@@ -95,15 +95,19 @@ describe('Convertor', () => {
 
     it('should insert data-tomark-pass in html tag with markdown syntax', () => {
       const tag = [
-        '| | |',
+        '| header | <ul><li>test</li></ul> |',
         '| --- | --- |',
-        '| aa | <ul><li>test</li></ul> |'
+        '| body | <ol><li>test</li><ol><li>test</li></ol></ol> |'
       ].join('\n');
 
       const expectedHTML = [
-        '<table><thead><tr><th></th><th></th></tr></thead>',
-        '<tbody><tr><td>aa</td>',
-        '<td><ul data-tomark-pass=""><li data-tomark-pass="">test</li></ul></td>',
+        '<table><thead><tr>',
+        '<th>header</th>',
+        '<th><ul data-tomark-pass=""><li data-tomark-pass="">test</li></ul></th>',
+        '</tr></thead>',
+        '<tbody><tr>',
+        '<td>body</td>',
+        '<td><ol data-tomark-pass=""><li data-tomark-pass="">test</li><ol data-tomark-pass=""><li data-tomark-pass="">test</li></ol></ol></td>',
         '</tr></tbody></table>'
       ].join('');
 
@@ -428,6 +432,29 @@ describe('Convertor', () => {
 
         expect(toMark(html)).toBe(markdown);
       });
+
+      it('brs in front of table and cell has brs', () => {
+        const html = [
+          '<br>',
+          '<br>',
+          '<table><thead><tr><th>foo<br>bar</th></tr></thead><tbody><tr><td>baz<br>qux</td></tr></tbody></table>'
+        ].join('');
+        const markdown = [
+          '<br>',
+          '<br>',
+          '| foo<br>bar |',
+          '| ------ |',
+          '| baz<br>qux |',
+        ].join('\n');
+
+        expect(toMark(html)).toBe(markdown);
+      });
+
+      it('prevent a tag in link from changing markdown syntax', () => {
+        const link = '![foo](<a href="http://link.to">http://link.to</a>)';
+    
+        expect(convertor.toMarkdown(link)).toBe(link);
+      });
     });
 
     describe('should not convert <b>, <strong> to **', () => {
@@ -559,6 +586,12 @@ describe('Convertor', () => {
         // strike
         expect(toMark('foo<s>bar&nbsp; &nbsp;</s>baz')).toBe('foo~~bar~~\u00a0 \u00a0baz');
         expect(toMark('foo<del>bar&nbsp; &nbsp;</del>baz')).toBe('foo~~bar~~\u00a0 \u00a0baz');
+      });
+
+      it('if text has newlines', () => {
+        expect(toMark('foo<b>bar\nbaz&nbsp;</b>qux')).toBe('foo**bar\nbaz**\u00a0qux');
+        expect(toMark('foo<i>&nbsp;bar\nbaz&nbsp;</i>qux')).toBe('foo\u00a0*bar\nbaz*\u00a0qux');
+        expect(toMark('foo<s>&nbsp;bar&nbsp;\nbaz&nbsp;qux&nbsp;</s>quxx')).toBe('foo\u00a0~~bar\u00a0\nbaz\u00a0qux~~\u00a0quxx');
       });
     });
   });

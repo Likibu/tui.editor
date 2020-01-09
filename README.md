@@ -97,7 +97,7 @@ Depending on the type of use you want like production of *Markdown* or maybe to 
 
 ### And More
 
-* **i18n**: English, Dutch, Korean, Japanese, Chinese, Spanish, German, Russian, French, Ukrainian, Turkish, Finnish, Czech, Arabic, Polish, Galician, Swedish, Italian + language you extend.
+* **i18n**: English, Dutch, Korean, Japanese, Chinese, Spanish, German, Russian, French, Ukrainian, Turkish, Finnish, Czech, Arabic, Polish, Galician, Swedish, Italian, Norwegian + language you extend.
 * **Viewer**: Renders Markdown content with extensions
 
 
@@ -162,7 +162,7 @@ tui-editor/
 * [Download all sources for each version](https://github.com/nhn/tui.editor/releases)
 
 
-## 🛍 Wrappers
+## 🛍️ Wrappers
 
 * [toast-ui.vue-editor](https://github.com/nhn/toast-ui.vue-editor): **Vue** wrapper component is powered by [NHN](https://github.com/nhn).
 * [toast-ui.react-editor](https://github.com/nhn/toast-ui.react-editor): **React** wrapper component is powered by [NHN](https://github.com/nhn).
