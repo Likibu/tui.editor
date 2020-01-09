@@ -26,6 +26,7 @@ const ENTRY_IMAGE_DIR = './src/image';
 
 const isProduction = process.argv.indexOf('--mode=production') >= 0;
 const isMinified = process.argv.indexOf('--minify') >= 0;
+const isFast = process.argv.indexOf('--env=fast') >= 0;
 
 const defaultConfigs = Array(isProduction ? 5 : 1).fill(0).map(() => {
   return {
@@ -285,20 +286,18 @@ function setProductionConfigForFull(config) {
     addMinifyPlugin(config);
     addAnalyzerPlugin(config, 'full');
   }
+}
 
-  // Build with Deps 2
-  defaultConfigs[5].entry = {
-    'Editor-full': ENTRY_MAIN_ALL
-  };
-  defaultConfigs[5].externals.length = 0;
-  defaultConfigs[5].output.library = NAME_SPACE;
-  defaultConfigs[5].output.libraryTarget = 'umd';
-  if (isProduction) {
-    defaultConfigs[5].plugins.push(new BundleAnalyzerPlugin({
-      analyzerMode: 'static',
-      reportFilename: `${ANALYZER_DIR}/stats-${pkg.version}.html`
-    }));
-  }
+addCopyingAssetsPlugin(defaultConfigs[0]);
+
+if (isProduction) {
+  setProductionConfig(defaultConfigs[0]);
+  setProductionConfigForEditorAll(defaultConfigs[1]);
+  setProductionConfigForViewerAll(defaultConfigs[2]);
+  setProductionConfigForExtensions(defaultConfigs[3]);
+  setProductionConfigForFull(defaultConfigs[4]);
+} else {
+  setDevelopConfig(defaultConfigs[0]);
 }
 
 let myConfigs = isFast ? [defaultConfigs[5]] : defaultConfigs;

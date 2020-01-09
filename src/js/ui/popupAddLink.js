@@ -10,6 +10,13 @@ import i18n from '../i18n';
 
 const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})(\/([^\s]*))?$/;
 
+function uuidv4() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 /**
  * Class PopupAddLink
  * It implements a link Add Popup
@@ -19,12 +26,14 @@ const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})(\/([^\s]*))?$/;
 class PopupAddLink extends LayerPopup {
   constructor(options) {
     let settings = options.editor.options.likibu; 
+    const uuid = uuidv4();
+    
     let popupContent = `
             <div style="display: none;"><input type="text" class="te-url-input" /></div>
-            <label for="type">Page Type</label>
-            <select id="type"><option value="">Select page type...</option><option value="content">Content Page</option><option value="tag">Tag Page</option><option value="landing_search">Destination</option><option value="custom">Custom URL</option></select>
-            <label for="lang">Language</label>
-            <select id="lang"><option value="">Select language...</option>
+            <label for="type_${uuid}">Page Type</label>
+            <select id="type_${uuid}"><option value="">Select page type...</option><option value="content">Content Page</option><option value="tag">Tag Page</option><option value="landing_search">Destination</option><option value="custom">Custom URL</option></select>
+            <label for="lang_${uuid}">Language</label>
+            <select id="lang_${uuid}"><option value="">Select language...</option>
     `;
 
     for (var lang in settings) {
@@ -33,11 +42,11 @@ class PopupAddLink extends LayerPopup {
     
     popupContent += `
             </select>
-            <div id="section_content" style="display: none;"><label for="content_slug">Content page : </label><select id="content_slug"><option value="">Select content page...</option></select></div>
-            <div id="section_tag" style="display: none;"><label for="tag_slug">Tag page : </label><select id="tag_slug"><option value="">Select tag page...</option></select></div>
-            <div id="section_destination" style="display: none;"><label for="destination_search">Destination : </label><input type="text" list="destination_list" id="destination_search"><datalist id="destination_list"></datalist><input type="hidden" id="destination_slug"></select>
-            <label for="flp_slug">FLP : </label><select id="flp_slug"><option value="">Select FLP...</option></select></div>
-            <div id="section_custom" style="display: none;"><label for="url_custom">URL : </label><input type="text" id="url_custom"></div>
+            <div id="section_content_${uuid}" style="display: none;"><label for="content_slug_${uuid}">Content page : </label><select id="content_slug_${uuid}"><option value="">Select content page...</option></select></div>
+            <div id="section_tag_${uuid}" style="display: none;"><label for="tag_slug_${uuid}">Tag page : </label><select id="tag_slug_${uuid}"><option value="">Select tag page...</option></select></div>
+            <div id="section_destination_${uuid}" style="display: none;"><label for="destination_search_${uuid}">Destination : </label><input type="text" list="destination_list_${uuid}" id="destination_search_${uuid}"><datalist id="destination_list_${uuid}"></datalist><input type="hidden" id="destination_slug_${uuid}"></select>
+            <label for="flp_slug_${uuid}">FLP : </label><select id="flp_slug_${uuid}"><option value="">Select FLP...</option></select></div>
+            <div id="section_custom_${uuid}" style="display: none;"><label for="url_custom_${uuid}">URL : </label><input type="text" id="url_custom_${uuid}"></div>
             <label for="linkText">${i18n.get('Link text')}</label>
             <input type="text" class="te-link-text-input" readonly />
             <div class="te-button-section">
@@ -50,7 +59,8 @@ class PopupAddLink extends LayerPopup {
       header: true,
       title: i18n.get('Insert link'),
       className: 'te-popup-add-link tui-editor-popup',
-      content: popupContent
+      content: popupContent,
+      uuid: uuid
     }, options);
     super(options);
 
@@ -66,9 +76,10 @@ class PopupAddLink extends LayerPopup {
    */
   _initInstance(options) {
     super._initInstance(options);
-
+    
     this._editor = options.editor;
     this._eventManager = options.editor.eventManager;
+    this.uuid = options.uuid;
   }
 
   /**
@@ -101,8 +112,8 @@ class PopupAddLink extends LayerPopup {
       const sq = this._editor.wwEditor.getEditor();
 
       // On reset tout (sauf la langue)
-      $('#type, #content_slug, #tag_slug, #destination_search, #flp_slug').val(''); 
-      $('#section_content, #section_tag, #section_destination, #section_custom').hide();
+      $('#type_' + this.uuid + ', #content_slug_' + this.uuid + ', #tag_slug_' + this.uuid + ', #destination_search_' + this.uuid + ', #flp_slug_' + this.uuid + '').val(''); 
+      $('#section_content_' + this.uuid + ', #section_tag_' + this.uuid + ', #section_destination_' + this.uuid + ', #section_custom_' + this.uuid + '').hide();
 
       if (sq.hasFormat('a')) {
         let sel = sq.getSelection();
@@ -121,16 +132,16 @@ class PopupAddLink extends LayerPopup {
         let likibuLink = this.getLikibuLink();
 
         if (likibuLink) {
-          $('#type').val(likibuLink.type);
-          $('#lang').val(likibuLink.lang);
+          $('#type_' + this.uuid + '').val(likibuLink.type);
+          $('#lang_' + this.uuid + '').val(likibuLink.lang);
           if ('' !== likibuLink.destination) {
-            $('#destination_search').val(likibuLink.destination);
+            $('#destination_search_' + this.uuid + '').val(likibuLink.destination);
             this.destinationChanged(false, true, likibuLink.flp);
           }
         } else {
-          $('#type').val('custom');
-          $('#lang').val('fr'); // fake
-          $('#url_custom').val(href);
+          $('#type_' + this.uuid + '').val('custom');
+          $('#lang_' + this.uuid + '').val('fr'); // fake
+          $('#url_custom_' + this.uuid + '').val(href);
         }
         
         this.typeChanged(likibuLink.slug, likibuLink.destination, likibuLink.flp);
@@ -146,27 +157,28 @@ class PopupAddLink extends LayerPopup {
       inputURL.focus();
     });
     
-    $('#type').change(() => {
-      if ($('#lang').val()) {
+        console.log('coucou', this.uuid, $('#type_' + this.uuid + ''))
+    $('#type_' + this.uuid + '').change(() => {
+      if ($('#lang_' + this.uuid + '').val()) {
         this.typeChanged();
       }
     });
-    $('#lang').change(() => {
-      if ($('#type').val()) {
+    $('#lang_' + this.uuid + '').change(() => {
+      if ($('#type_' + this.uuid + '').val()) {
         this.typeChanged();
       }
     });
-    $('#content_slug, #tag_slug').change(() => {
+    $('#content_slug_' + this.uuid + ', #tag_slug_' + this.uuid + '').change(() => {
       this.setLikibuLink();
     });
-    $('#flp_slug').change(() => {
+    $('#flp_slug_' + this.uuid + '').change(() => {
       this.setLikibuLink();
     });
-    $('#url_custom').on('keyup', () => {
+    $('#url_custom_' + this.uuid + '').on('keyup', () => {
       this.setLikibuLink();
     });
     this.destination_search = '';
-    $('#destination_search').on('keyup', (e) => { this.destinationChanged(e, false); });
+    $('#destination_search_' + this.uuid + '').on('keyup', (e) => { this.destinationChanged(e, false); });
 
     this.on('hidden', () => {
       this._resetInputs();
@@ -174,27 +186,28 @@ class PopupAddLink extends LayerPopup {
   }
   
   destinationChanged(e, forceRefresh, flpSlug) {
-    let value = $('#destination_search').val();
+    let value = $('#destination_search_' + this.uuid + '').val();
     let found = false;
+    const uuid = this.uuid;
 
-    $('#destination_list option').each((i, option) => {
+    $('#destination_list_' + uuid + ' option').each((i, option) => {
       if ($(option).val() == value) {
         found = true;
       }
     });
 
     if (found || forceRefresh) {
-      this.loadFlps($('#lang').val(), $('#destination_search').val(), flpSlug);
+      this.loadFlps($('#lang_' + uuid + '').val(), $('#destination_search_' + uuid + '').val(), flpSlug);
       this.setLikibuLink();
       return e ? e.preventDefault() : false;
     }
 
-    this.destination_search = $('#destination_search').val();
+    this.destination_search = $('#destination_search_' + uuid + '').val();
     $.ajax({
       dataType: 'json',
       url: '/destination/autocomplete',
       data: {
-        lang: $('#lang').val(),
+        lang: $('#lang_' + uuid + '').val(),
         term: value
       },
       success: function(data) {
@@ -202,35 +215,35 @@ class PopupAddLink extends LayerPopup {
         $(data).each(function() {
           options += '<option value="' + this.slug + '">' + this.label + '</option>';
         });
-        $('#destination_list').html(options);
-        $('#destination_search').focus();
+        $('#destination_list_' + uuid + '').html(options);
+        $('#destination_search_' + uuid + '').focus();
       }
     });
   }
   
   setLikibuLink() {
-    if ('custom' == $('#type').val()) {
-      return this._inputURL.value = $('#url_custom').val();
+    if ('custom' == $('#type_' + this.uuid + '').val()) {
+      return this._inputURL.value = $('#url_custom_' + this.uuid + '').val();
     }
     let link = '{{';
-    link += $('#type').val();
+    link += $('#type_' + this.uuid + '').val();
     link += '#';
-    link += $('#lang').val();
+    link += $('#lang_' + this.uuid + '').val();
     link += '#';
     
-    switch ($('#type').val()) {
+    switch ($('#type_' + this.uuid + '').val()) {
       case 'content':
-        link += $('#content_slug').val();
+        link += $('#content_slug_' + this.uuid + '').val();
         break;
       case 'tag':
-        link += $('#tag_slug').val();
+        link += $('#tag_slug_' + this.uuid + '').val();
         break;
       case 'landing_search':
-        link += this.settings[$('#lang').val()].landing_slug;
+        link += this.settings[$('#lang_' + this.uuid + '').val()].landing_slug;
         link += '#';
         link += '{"where":"';
-        link += $('#destination_search').val();
-        const flp = $('#flp_slug').val();
+        link += $('#destination_search_' + this.uuid + '').val();
+        const flp = $('#flp_slug_' + this.uuid + '').val();
         if (flp) {
           link += '/';
           link += flp;
@@ -271,31 +284,31 @@ class PopupAddLink extends LayerPopup {
   }
 
   typeChanged(slug, destination, flp) {
-    let $type = $('#type');
-    let $lang = $('#lang');
+    let $type = $('#type_' + this.uuid + '');
+    let $lang = $('#lang_' + this.uuid + '');
 
     switch ($type.val()) {
       case 'content':
-        $('#section_content, #section_lang').show();
-        $('#section_tag, #section_destination, #section_custom').hide();
-        $('#tag_slug, #destination_search, #flp_slug').val('');
+        $('#section_content_' + this.uuid + ', #section_lang_' + this.uuid + '').show();
+        $('#section_tag_' + this.uuid + ', #section_destination_' + this.uuid + ', #section_custom_' + this.uuid + '').hide();
+        $('#tag_slug_' + this.uuid + ', #destination_search_' + this.uuid + ', #flp_slug_' + this.uuid + '').val('');
         this.loadContentPages($lang.val(), slug);
         break;
       case 'tag':
-        $('#section_tag, #section_lang').show();
-        $('#section_content, #section_destination, #section_custom').hide();
-        $('#content_slug, #destination_search, #flp_slug').val('');
+        $('#section_tag_' + this.uuid + ', #section_lang_' + this.uuid + '').show();
+        $('#section_content_' + this.uuid + ', #section_destination_' + this.uuid + ', #section_custom_' + this.uuid + '').hide();
+        $('#content_slug_' + this.uuid + ', #destination_search_' + this.uuid + ', #flp_slug_' + this.uuid + '').val('');
         this.loadTagPages($lang.val(), slug);
         break;
       case 'landing_search':
-        $('#section_destination, #section_lang').show();
-        $('#section_content, #section_tag, #section_custom').hide();
-        $('#content_slug, #tag_slug').val('');
+        $('#section_destination_' + this.uuid + ', #section_lang_' + this.uuid + '').show();
+        $('#section_content_' + this.uuid + ', #section_tag_' + this.uuid + ', #section_custom_' + this.uuid + '').hide();
+        $('#content_slug_' + this.uuid + ', #tag_slug_' + this.uuid + '').val('');
         break;
       case 'custom':
-        $('#section_custom').show();
-        $('#section_content, #section_tag, #section_destination, #section_lang').hide();
-        $('#content_slug, #tag_slug, #destination_search, #flp_slug').val('');
+        $('#section_custom_' + this.uuid + '').show();
+        $('#section_content_' + this.uuid + ', #section_tag_' + this.uuid + ', #section_destination_' + this.uuid + ', #section_lang_' + this.uuid + '').hide();
+        $('#content_slug_' + this.uuid + ', #tag_slug_' + this.uuid + ', #destination_search_' + this.uuid + ', #flp_slug_' + this.uuid + '').val('');
       default: 
         break;
     }
@@ -303,7 +316,7 @@ class PopupAddLink extends LayerPopup {
   }
   
   loadContentPages(lang, slug) {
-    let $select = $('#content_slug');
+    let $select = $('#content_slug_' + this.uuid + '');
     $select.find('option:not([value=""])').remove();
     
     $(this.settings[lang].content_pages).each(function() {
@@ -314,7 +327,7 @@ class PopupAddLink extends LayerPopup {
   }
   
   loadTagPages(lang, slug) {
-    let $select = $('#tag_slug');
+    let $select = $('#tag_slug_' + this.uuid + '');
     $select.find('option:not([value=""])').remove();
     
     $(this.settings[lang].tag_pages).each(function() {
@@ -325,7 +338,7 @@ class PopupAddLink extends LayerPopup {
   }
   
   loadFlps(lang, destination, selection) {
-    let $select = $('#flp_slug');
+    let $select = $('#flp_slug_' + this.uuid + '');
     $select.find('option:not([value=""])').remove();
 
     if (lang && destination) {
