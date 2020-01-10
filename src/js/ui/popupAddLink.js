@@ -157,7 +157,6 @@ class PopupAddLink extends LayerPopup {
       inputURL.focus();
     });
     
-        console.log('coucou', this.uuid, $('#type_' + this.uuid + ''))
     $('#type_' + this.uuid + '').change(() => {
       if ($('#lang_' + this.uuid + '').val()) {
         this.typeChanged();
