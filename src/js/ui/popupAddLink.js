@@ -7,15 +7,10 @@ import util from 'tui-code-snippet';
 
 import LayerPopup from './layerpopup';
 import i18n from '../i18n';
+import uuidv4 from '../uuid';
 
 const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})(\/([^\s]*))?$/;
 
-function uuidv4() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
 
 /**
  * Class PopupAddLink

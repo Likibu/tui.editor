@@ -7,6 +7,7 @@ import util from 'tui-code-snippet';
 
 import LayerPopup from './layerpopup';
 import i18n from '../i18n';
+import uuidv4 from '../uuid';
 
 const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})(\/([^\s]*))?$/;
 
@@ -18,16 +19,18 @@ const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})(\/([^\s]*))?$/;
  */
 class PopupAddDestinationLink extends LayerPopup {
   constructor(options) {
+    const uuid = uuidv4();
     let settings = options.editor.options.likibu; 
     let popupContent = `
-            <div id="addDestinationLink">Loading...</div>
+            <div id="addDestinationLink_${uuid}">Loading...</div>
     `;
 
     options = util.extend({
       header: true,
       title: 'Add automatic destination link',
       className: 'te-popup-add-link tui-editor-popup',
-      content: popupContent
+      content: popupContent,
+      uuid: uuid
     }, options);
     super(options);
 
@@ -46,6 +49,7 @@ class PopupAddDestinationLink extends LayerPopup {
 
     this._editor = options.editor;
     this._eventManager = options.editor.eventManager;
+    this.uuid = options.uuid;
   }
 
   /**
@@ -71,7 +75,7 @@ class PopupAddDestinationLink extends LayerPopup {
       const sq = this._editor.wwEditor.getEditor();
       const lang = this.detectLang();
       
-      $('#addDestinationLink').html('Loading...');
+      $('#addDestinationLink_' + this.uuid).html('Loading...');
       
       $.ajax({
         dataType: 'json',
@@ -97,8 +101,8 @@ class PopupAddDestinationLink extends LayerPopup {
           });
           
           html += '</ul>';
-          $('#addDestinationLink').html(html);
-          $('#addDestinationLink a').click((e) => {
+          $('#addDestinationLink_' + this.uuid).html(html);
+          $('#addDestinationLink_' + this.uuid + ' a').click((e) => {
             e.preventDefault();
             const $link = $(e.target);
             this._addLink($link.data('slug'), $link.data('lang'));
